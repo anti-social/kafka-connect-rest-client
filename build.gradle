@@ -29,56 +29,62 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-stdlib-common'
+                implementation "org.jetbrains.kotlin:kotlin-stdlib-common"
 
-                implementation 'org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.9.1'
+                implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version"
 
-                implementation 'io.ktor:ktor-client-core:1.1.1'
-                implementation 'io.ktor:ktor-client-json:1.1.1'
+                implementation "io.ktor:ktor-client-core:$ktor_version"
+                implementation "io.ktor:ktor-client-json:$ktor_version"
             }
         }
         commonTest {
             dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-test-common'
-                implementation 'org.jetbrains.kotlin:kotlin-test-annotations-common'
-                implementation 'io.ktor:ktor-client-mock:1.1.1'
+                implementation "org.jetbrains.kotlin:kotlin-test-common"
+                implementation "org.jetbrains.kotlin:kotlin-test-annotations-common"
+
+                implementation "io.ktor:ktor-client-mock:$ktor_version"
             }
         }
         jvmMain {
             dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
-                implementation 'io.ktor:ktor-client-json-jvm:1.1.1'
+                implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
+                implementation "io.ktor:ktor-client-json-jvm:$ktor_version"
             }
         }
         jvmTest {
             dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-test'
-                implementation 'org.jetbrains.kotlin:kotlin-test-junit'
-                implementation 'io.ktor:ktor-client-mock-jvm:1.1.1'
+                implementation "org.jetbrains.kotlin:kotlin-test"
+                implementation "org.jetbrains.kotlin:kotlin-test-junit"
+
+                implementation "io.ktor:ktor-client-mock-jvm:$ktor_version"
             }
         }
         jsMain {
             dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-stdlib-js'
-                implementation 'org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:0.9.1'
-                implementation 'io.ktor:ktor-client-json-js:1.1.1'
+                implementation "org.jetbrains.kotlin:kotlin-stdlib-js"
+
+                implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:$serialization_version"
+                implementation "io.ktor:ktor-client-json-js:$ktor_version"
             }
         }
         jsTest {
             dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-test-js'
-                implementation 'io.ktor:ktor-client-mock-js:1.1.1'
+                implementation "org.jetbrains.kotlin:kotlin-test-js"
+
+                implementation "io.ktor:ktor-client-mock-js:$ktor_version"
             }
         }
         linuxMain {
             dependencies {
-                implementation 'org.jetbrains.kotlinx:kotlinx-serialization-runtime-native:0.9.1'
-                implementation 'io.ktor:ktor-client-json-native:1.1.1'
+                implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime-native:$serialization_version"
+
+                implementation "io.ktor:ktor-client-json-native:$ktor_version"
             }
         }
         linuxTest {
             dependencies {
-                implementation 'io.ktor:ktor-client-mock-native:1.1.1'
+                implementation "io.ktor:ktor-client-mock-native:$ktor_version"
             }
         }
     }
