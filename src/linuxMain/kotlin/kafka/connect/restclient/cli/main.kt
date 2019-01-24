@@ -1,4 +1,4 @@
-package cli
+package kafka.connect.restclient.cli
 
 import kotlin.system.exitProcess
 

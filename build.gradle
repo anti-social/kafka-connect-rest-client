@@ -1,7 +1,17 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven { url "https://dl.bintray.com/jetbrains/kotlin-native-dependencies" }
+    }
+    dependencies {
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.2-SNAPSHOT"
+    }
+}
+
 plugins {
     id 'kotlin-multiplatform' version '1.3.11'
     id 'kotlinx-serialization' version '1.3.11'
-    id "com.jfrog.bintray" version "1.8.4"
 }
 repositories {
     mavenCentral()
@@ -12,6 +22,7 @@ group 'company.evo'
 version '0.0.1'
 
 apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
 
 kotlin {
     targets {
@@ -21,9 +32,9 @@ kotlin {
         // For Linux, preset should be changed to e.g. presets.linuxX64
         // For MacOS, preset should be changed to e.g. presets.macosX64
         fromPreset(presets.linuxX64, 'linux') {
-            // Comment to generate Kotlin/Native library (KLIB) instead of executable file:
+            // Comment to generate Kotlin/Native library (DYNAMIC) instead of executable file:
             compilations.main.outputKinds('EXECUTABLE')
-            compilations.main.entryPoint = 'cli.main'
+            compilations.main.entryPoint = 'kafka.connect.restclient.cli.main'
         }
     }
     sourceSets {
@@ -90,6 +101,46 @@ kotlin {
     }
 }
 
+//*** Publishing ***
+
+def pomConfig = {
+    licenses {
+        license {
+            name "The Apache Software License, Version 2.0"
+            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+            distribution "repo"
+        }
+    }
+    developers {
+        developer {
+            id "Evo.company"
+            name "Evo company"
+            organization "Evo"
+            organizationUrl "http://evo.company"
+        }
+    }
+
+    scm {
+        url vcs
+    }
+}
+
+project.ext.configureMavenCentralMetadata = { pom ->
+    def root = asNode()
+    root.appendNode('name', project.name)
+    root.appendNode('description', project.description)
+    root.appendNode('url', project.vcs)
+    root.children().last() + pomConfig
+}
+
+project.ext.configurePom = pomConfig
+
+// Create empty jar for sources classifier to satisfy maven requirements
+task stubSources(type: Jar) {
+    classifier = 'sources'
+}
+
+// Create empty jar for javadoc classifier to satisfy maven requirements
 task stubJavadoc(type: Jar) {
     classifier = 'javadoc'
 }
@@ -97,12 +148,19 @@ task stubJavadoc(type: Jar) {
 task emptyJar(type: Jar) {
 }
 
+// Configure publishing
 publishing {
+    // TODO: I have no idea about this
     repositories {
-        maven { url = "https://github.com/anti-social/kafka-connect-rest-client" }
-        maven { name = "testLocal"; url = "$rootProject.buildDir/m2" }
+        maven {
+            url = "https://bintray.com/${project.bintrayRepository}"
+        }
     }
+
+    // Process each publication we have in this project
     publications.all {
+        pom.withXml(configureMavenCentralMetadata)
+
         def type = it.name
         switch (type) {
             case "kotlinMultiplatform":
@@ -126,14 +184,13 @@ publishing {
                 break
         }
 
-
         pom.withXml { pom ->
             def dependenciesNode = asNode().getAt("dependencies")[0]
             if (dependenciesNode == null) return
             dependenciesNode.dependency.each {
                 it.artifactId.each { node ->
                     def artifactId = node.text()
-                    if (!artifactId.startsWith("kafka-connect-rest-client") || !artifactId.endsWith("native")) return
+                    if (!artifactId.startsWith(project.name) || !artifactId.endsWith("native")) return
 
                     switch (type) {
                         case "metadata":
@@ -149,20 +206,21 @@ publishing {
         }
     }
 
-
+    // Patch publications with fake javadoc
     kotlin.targets.all { target ->
-        def publication = publishing.publications.findByName(target.name)
+        def targetPublication = publications.findByName(target.name)
+        if (targetPublication != null) {
+            targetPublication.artifact stubJavadoc
+        }
+    }
 
-        if (publication != null) {
-            publication.artifact stubJavadoc
-
-            if (target.platformType.name != "native") {
-                publication.gradleModuleMetadataFile = null
-                tasks.matching { it.name == "generateMetadataFileFor${name.capitalize()}Publication" }.all {
-                    onlyIf { false }
-                }
-            } else {
-                publication.artifact emptyJar
+    // Remove gradle metadata publishing from all targets which are not native
+    kotlin.targets.all { target ->
+        if (target.platformType.name != 'native') {
+            def publication = publishing.publications[targetName]
+            publication.gradleModuleMetadataFile = null
+            tasks.matching { it.name == "generateMetadataFileFor${name.capitalize()}Publication" }.all {
+                onlyIf { false }
             }
         }
     }
@@ -198,6 +256,6 @@ bintrayUpload.doFirst {
     publications = project.publishing.publications.findAll { !it.name.contains('-test') }.collect {
         println("Uploading artifact '$it.groupId:$it.artifactId:$it.version' from publication '$it.name'")
         // https://github.com/bintray/gradle-bintray-plugin/issues/256
-        it.name
+        it
     }
 }
