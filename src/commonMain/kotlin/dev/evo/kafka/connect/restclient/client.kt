@@ -9,18 +9,13 @@ import io.ktor.client.features.json.serializer.KotlinxSerializer
 import io.ktor.client.request.get
 import io.ktor.client.request.put
 import io.ktor.client.response.HttpResponsePipeline
-import io.ktor.content.TextContent
-import io.ktor.http.clone
-import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.takeFrom
-import io.ktor.http.URLBuilder
 import io.ktor.http.Url
 import io.ktor.util.AttributeKey
 
 import kotlinx.io.core.Closeable
 
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
 import kotlinx.serialization.serializer
 

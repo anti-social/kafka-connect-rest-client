@@ -4,6 +4,8 @@ import io.ktor.client.engine.curl.Curl
 
 import kotlin.system.exitProcess
 
-suspend fun main(args: Array<String>) {
+import kotlinx.coroutines.runBlocking
+
+fun main(args: Array<String>): Unit = runBlocking {
     exitProcess(run(args, Curl.create {}))
 }

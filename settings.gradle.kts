@@ -10,7 +10,7 @@ pluginManagement {
         }
     }
 }
-rootProject.name = 'kafka-connect-rest-client'
 
+rootProject.name = "kafka-connect-rest-client"
 
-enableFeaturePreview('GRADLE_METADATA')
+enableFeaturePreview("GRADLE_METADATA")

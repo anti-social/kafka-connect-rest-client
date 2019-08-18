@@ -1,13 +1,7 @@
 package dev.evo.kafka.connect.restclient
 
-import kotlinx.serialization.Encoder
-import kotlinx.serialization.Decoder
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Serializer
-import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.internal.StringDescriptor
 
 @Serializable
 data class ConnectInfo(

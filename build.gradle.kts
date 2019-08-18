@@ -35,7 +35,7 @@ kotlin {
     linuxX64 {
         binaries {
             executable() {
-                entryPoint = "company.evo.kafka.connect.restclient.cli.main"
+                entryPoint = "dev.evo.kafka.connect.restclient.cli.main"
             }
         }
     }
@@ -44,9 +44,10 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(kotlin("stdlib-common"))
-                implementation(serialization("runtime"))
+                implementation(serialization("runtime-common"))
                 implementation(ktorClient("core"))
                 implementation(ktorClient("json"))
+                implementation(ktorClient("serialization"))
             }
         }
         commonTest {
@@ -96,8 +97,8 @@ kotlin {
             dependencies {
                 implementation(serialization("runtime-native"))
                 implementation(ktorClient("core-native"))
-                implementation(ktorClient("serialization-native"))
                 implementation(ktorClient("curl"))
+                implementation(ktorClient("serialization-native"))
             }
         }
         val nativeTest by creating {
