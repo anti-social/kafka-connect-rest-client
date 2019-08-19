@@ -9,9 +9,11 @@ import io.ktor.client.features.json.serializer.KotlinxSerializer
 import io.ktor.client.request.get
 import io.ktor.client.request.put
 import io.ktor.client.response.HttpResponsePipeline
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.takeFrom
 import io.ktor.http.Url
+import io.ktor.http.content.TextContent
 import io.ktor.util.AttributeKey
 
 import kotlinx.io.core.Closeable
@@ -76,7 +78,10 @@ class KafkaConnectClient(
     }
 
     companion object {
-        private val CONNECTORS_ENDPOINT = "connectors"
+        private const val CONNECTORS_ENDPOINT = "connectors"
+        private val EMPTY_BODY = TextContent(
+            "", ContentType.Application.Json
+        )
     }
 
     suspend fun info(): ConnectInfo {
@@ -99,6 +104,7 @@ class KafkaConnectClient(
         try {
             httpClient.put<Unit> {
                 url.takeFrom(baseUrl).path(path)
+                body = EMPTY_BODY
             }
         } catch (ex: ReceivePipelineException) {
             throw ex.cause
