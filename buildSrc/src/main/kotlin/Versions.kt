@@ -3,6 +3,4 @@ object Versions {
     val coroutines = "1.2.2"
     val ktor = "1.2.3"
     val serialization = "0.11.1"
-
-    val bintray = "1.8.2-SNAPSHOT"
 }
