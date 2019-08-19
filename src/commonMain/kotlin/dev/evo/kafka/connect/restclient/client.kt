@@ -79,9 +79,6 @@ class KafkaConnectClient(
 
     companion object {
         private const val CONNECTORS_ENDPOINT = "connectors"
-        private val EMPTY_BODY = TextContent(
-            "", ContentType.Application.Json
-        )
     }
 
     suspend fun info(): ConnectInfo {
@@ -104,7 +101,9 @@ class KafkaConnectClient(
         try {
             httpClient.put<Unit> {
                 url.takeFrom(baseUrl).path(path)
-                body = EMPTY_BODY
+                body = TextContent(
+                    "", ContentType.Application.Json
+                )
             }
         } catch (ex: ReceivePipelineException) {
             throw ex.cause
