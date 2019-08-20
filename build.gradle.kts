@@ -22,7 +22,21 @@ group = "dev.evo"
 version = "0.0.4"
 
 kotlin {
-    jvm()
+    jvm {
+        compilations {
+            listOf(this["main"], this["test"]).forEach {
+                it.kotlinOptions {
+                    jvmTarget = Versions.jvmTarget
+                }
+            }
+        }
+        attributes {
+            attribute(
+                TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE,
+                Versions.targetJvmVersionAttribute
+            )
+        }
+    }
 //    js {
 //        nodejs()
 //        compilations.all {
