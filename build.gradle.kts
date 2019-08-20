@@ -34,7 +34,7 @@ kotlin {
 //    }
     linuxX64 {
         binaries {
-            executable() {
+            executable {
                 entryPoint = "dev.evo.kafka.connect.restclient.cli.main"
             }
         }
@@ -118,7 +118,5 @@ kotlin {
 }
 
 publishing {
-    repositories {
-        bintray(project, "kafka-connect-rest-client")
-    }
+    configureMultiplatformPublishing(project)
 }
