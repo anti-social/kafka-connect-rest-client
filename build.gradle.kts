@@ -19,7 +19,7 @@ repositories {
     maven("https://kotlin.bintray.com/kotlinx")
 }
 group = "dev.evo"
-version = "0.0.5"
+version = "0.0.6"
 
 kotlin {
     jvm {
@@ -37,15 +37,15 @@ kotlin {
             )
         }
     }
-//    js {
-//        nodejs()
-//        compilations.all {
-//            kotlinOptions {
-//                moduleKind = "umd"
-//                sourceMap = true
-//            }
-//        }
-//    }
+    js {
+        nodejs()
+        compilations.all {
+            kotlinOptions {
+                moduleKind = "umd"
+                sourceMap = true
+            }
+        }
+    }
     linuxX64 {
         binaries {
             executable {
@@ -90,22 +90,25 @@ kotlin {
             }
         }
 
-//        val jsMain by getting {
-//            dependencies {
-//                implementation("org.jetbrains.kotlin:kotlin-stdlib-js")
-//
-//                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:${Versions.serialization}")
-//                implementation("io.ktor:ktor-client-json-js:${Versions.ktor}")
-//                implementation("io.ktor:ktor-client-serialization-js:${Versions.ktor}")
-//            }
-//        }
-//        val jsTest by getting {
-//            dependencies {
-//                implementation("org.jetbrains.kotlin:kotlin-test-js")
-//
-//                implementation("io.ktor:ktor-client-mock-js:${Versions.ktor}")
-//            }
-//        }
+        val jsMain by getting {
+            dependencies {
+                implementation(kotlin("stdlib-js"))
+
+                implementation(serialization("runtime-js"))
+                implementation(ktorClient("core-js"))
+                implementation(ktorClient("json-js"))
+                implementation(ktorClient("serialization-js"))
+                // https://github.com/ktorio/ktor/issues/961
+                implementation(npm("text-encoding", "^0.7.0"))
+            }
+        }
+        val jsTest by getting {
+            dependencies {
+                implementation(kotlin("test-js"))
+
+                implementation(ktorClient("mock-js"))
+            }
+        }
 
         val nativeMain by creating {
             dependencies {

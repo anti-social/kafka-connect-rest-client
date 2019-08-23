@@ -9,10 +9,11 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.Url
 import io.ktor.http.headersOf
-import kotlinx.coroutines.CoroutineScope
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+
+import kotlinx.coroutines.CoroutineScope
 
 expect fun runTest(block: suspend CoroutineScope.() -> Unit)
 

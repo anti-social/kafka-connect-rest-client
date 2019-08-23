@@ -58,7 +58,6 @@ fun PublishingExtension.configureMultiplatformPublishing(project: Project, packa
         archiveClassifier.set("sources")
     }
     publications.getByName<MavenPublication>("kotlinMultiplatform") {
-        artifactId = "${project.name}-native"
         artifact(emptyJar)
         artifact(sourcesJar)
     }
