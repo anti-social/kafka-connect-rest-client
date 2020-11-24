@@ -8,18 +8,14 @@ import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.KotlinxSerializer
 import io.ktor.client.request.get
 import io.ktor.client.request.put
-import io.ktor.client.response.HttpResponsePipeline
+import io.ktor.client.statement.HttpResponsePipeline
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.takeFrom
 import io.ktor.http.Url
 import io.ktor.http.content.TextContent
 import io.ktor.util.AttributeKey
-
-import kotlinx.io.core.Closeable
-
-import kotlinx.serialization.list
-import kotlinx.serialization.serializer
+import io.ktor.utils.io.core.Closeable
 
 open class KafkaConnectRestException(
     val statusCode: Int, val statusDescription: String,
@@ -69,11 +65,7 @@ class KafkaConnectClient(
         expectSuccess = false
         install(ExpectKafkaConnectSuccess)
         install(JsonFeature) {
-            serializer = KotlinxSerializer().apply {
-                register(ConnectInfo.serializer())
-                register(String.serializer().list)
-                register(ConnectorStatus.serializer())
-            }
+            serializer = KotlinxSerializer()
         }
     }
 
