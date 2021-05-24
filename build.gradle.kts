@@ -3,22 +3,22 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 buildscript {
     repositories {
         mavenCentral()
-        jcenter()
     }
 }
 
 plugins {
     kotlin("multiplatform")
-    id("kotlinx-serialization") version Versions.kotlin
+    kotlin("plugin.serialization") version Versions.kotlin
     `maven-publish`
+    signing
+    id("io.github.gradle-nexus.publish-plugin")
 }
 
 repositories {
     mavenCentral()
-    jcenter()
-    maven("https://kotlin.bintray.com/kotlinx")
 }
-group = "dev.evo"
+
+group = "dev.evo.kafka-connect-rest-client"
 version = "0.0.8"
 
 kotlin {
@@ -57,8 +57,6 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(kotlin("stdlib-common"))
-                implementation(serialization("runtime-common"))
                 implementation(ktorClient("core"))
                 implementation(ktorClient("json"))
                 implementation(ktorClient("serialization"))
@@ -66,64 +64,39 @@ kotlin {
         }
         commonTest {
             dependencies {
+                implementation(kotlin("test"))
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
-                implementation(coroutines("core-common"))
+                implementation(coroutines("core"))
                 implementation(ktorClient("mock"))
             }
         }
 
         val jvmMain by getting {
             dependencies {
-                implementation(kotlin("stdlib-jdk8"))
-                implementation(serialization("runtime"))
                 implementation(ktorClient("cio"))
-                implementation(ktorClient("serialization-jvm"))
             }
         }
         val jvmTest by getting {
             dependencies {
-                implementation(kotlin("test"))
                 implementation(kotlin("test-junit"))
-                implementation(coroutines("core"))
-                implementation(ktorClient( "mock-jvm"))
             }
         }
 
-        val jsMain by getting {
-            dependencies {
-                implementation(kotlin("stdlib-js"))
-
-                implementation(serialization("runtime-js"))
-                implementation(ktorClient("core-js"))
-                implementation(ktorClient("json-js"))
-                implementation(ktorClient("serialization-js"))
-                // https://github.com/ktorio/ktor/issues/961
-                implementation(npm("text-encoding", "^0.7.0"))
-            }
-        }
+        val jsMain by getting {}
         val jsTest by getting {
             dependencies {
                 implementation(kotlin("test-js"))
-
-                implementation(ktorClient("mock-js"))
             }
         }
 
         val nativeMain by creating {
             dependencies {
-                implementation(serialization("runtime-native"))
-                implementation(ktorClient("core-native"))
                 implementation(ktorClient("curl"))
-                implementation(ktorClient("serialization-native"))
             }
         }
-        val nativeTest by creating {
-            dependencies {
-                implementation(coroutines("core-native"))
-                implementation(ktorClient("mock-native"))
-            }
-        }
+        val nativeTest by creating {}
+
         val nativeTargetNames = targets.withType<KotlinNativeTarget>().names
         project.configure(nativeTargetNames.map { getByName("${it}Main") }) {
             dependsOn(nativeMain)
@@ -134,6 +107,4 @@ kotlin {
     }
 }
 
-publishing {
-    configureMultiplatformPublishing(project)
-}
+configureMultiplatformPublishing(project.name, "Kafka connect rest client")

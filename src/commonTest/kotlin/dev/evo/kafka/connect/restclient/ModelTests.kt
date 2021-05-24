@@ -3,20 +3,18 @@ package dev.evo.kafka.connect.restclient
 import kotlin.test.Test
 
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
-import kotlinx.serialization.MissingFieldException
+import kotlinx.serialization.SerializationException
 
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-@kotlinx.serialization.UnstableDefault
 class ModelTests {
-    val json = Json(JsonConfiguration.Default)
+    val json = Json
 
     @Test
     fun testSerializingConnectInfoFull() {
         assertEquals(
-            json.stringify(
+            json.encodeToString(
                 ConnectInfo.serializer(),
                 ConnectInfo("1.0", "abcdef")
             ),
@@ -27,7 +25,7 @@ class ModelTests {
     @Test
     fun testDeserializingConnectInfoFull() {
         assertEquals(
-            json.parse(
+            json.decodeFromString(
                 ConnectInfo.serializer(),
                 """{"version":"1.0","commit":"abcdef"}"""
             ),
@@ -37,8 +35,8 @@ class ModelTests {
 
     @Test
     fun testDeserializingConnectInfoMissing() {
-        assertFailsWith(MissingFieldException::class) {
-            json.parse(
+        assertFailsWith(SerializationException::class) {
+            json.decodeFromString(
                 ConnectInfo.serializer(),
                 """{"version":"1.0"}"""
             )

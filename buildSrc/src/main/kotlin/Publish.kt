@@ -1,4 +1,5 @@
-import java.net.URI
+import io.github.gradlenexus.publishplugin.NexusPublishExtension
+import io.github.gradlenexus.publishplugin.NexusRepositoryContainer
 
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.RepositoryHandler
@@ -7,60 +8,86 @@ import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.*
-import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.gradle.plugins.signing.SigningExtension
 
-private const val bintrayUsername = "evo"
-private const val bintrayRepoName = "maven"
 
-fun Project.bintrayUrl(packageName: String): URI {
-    val bintrayPublish = findProperty("bintrayPublish")?.toString()
-        ?: System.getenv("BINTRAY_PUBLISH")
-        ?: "0"
-    return URI(
-        "https://api.bintray.com/maven/$bintrayUsername/$bintrayRepoName/$packageName/;publish=$bintrayPublish"
-    )
-}
+fun Project.configureMultiplatformPublishing(projectName: String, projectDescription: String) {
+    val javadocJar by tasks.registering(Jar::class) {
+        archiveClassifier.set("javadoc")
+    }
 
-fun Project.bintrayUser(): String? {
-    return findProperty("bintrayUser")?.toString()
-        ?: System.getenv("BINTRAY_USER")
-}
+    configure<PublishingExtension> {
+        publications.getByName<MavenPublication>("kotlinMultiplatform") {
+            artifact(javadocJar)
 
-fun Project.bintrayApiKey(): String? {
-    return findProperty("bintrayApiKey")?.toString()
-        ?: System.getenv("BINTRAY_API_KEY")
-}
+            configurePom(projectName, projectDescription)
+        }
 
-fun RepositoryHandler.bintray(project: Project, packageName: String? = null): MavenArtifactRepository = maven {
-    name = "bintray"
-    url = project.bintrayUrl(packageName ?: project.rootProject.name)
-    credentials {
-        username = project.bintrayUser()
-        password = project.bintrayApiKey()
+        repositories {
+            configureTestRepository(this@configureMultiplatformPublishing)
+        }
+    }
+
+    configure<NexusPublishExtension> {
+        repositories {
+            configureSonatypeRepository(this@configureMultiplatformPublishing)
+        }
+    }
+
+    configure<SigningExtension> {
+        sign(the<PublishingExtension>().publications)
     }
 }
 
-fun RepositoryHandler.test(project: Project): MavenArtifactRepository = maven {
+fun RepositoryHandler.configureTestRepository(project: Project): MavenArtifactRepository = maven {
     name = "test"
     url = project.uri("file://${project.rootProject.buildDir}/localMaven")
 }
 
-fun PublishingExtension.configureRepositories(project: Project, packageName: String? = null) = repositories {
-    bintray(project, packageName)
-    test(project)
+fun NexusRepositoryContainer.configureSonatypeRepository(project: Project) = sonatype {
+    val baseSonatypeUrl = project.properties["sonatypeUrl"]?.toString()
+        ?: System.getenv("SONATYPE_URL")
+        ?: "https://s01.oss.sonatype.org"
+
+    nexusUrl.set(project.uri("$baseSonatypeUrl/service/local/"))
+    snapshotRepositoryUrl.set(project.uri("$baseSonatypeUrl/content/repositories/snapshots/"))
+
+    val sonatypeUser = project.properties["sonatypeUser"]?.toString()
+        ?: System.getenv("SONATYPE_USER")
+    val sonatypePassword = project.properties["sonatypePassword"]?.toString()
+        ?: System.getenv("SONATYPE_PASSWORD")
+
+    username.set(sonatypeUser)
+    password.set(sonatypePassword)
 }
 
-fun PublishingExtension.configureMultiplatformPublishing(project: Project, packageName: String? = null) {
-    val emptyJar by project.tasks.register<Jar>("emptyJar")
-    val sourcesJar by project.tasks.register<Jar>("sourcesJar") {
-        val kotlin = project.extensions.getByName<KotlinMultiplatformExtension>("kotlin")
-        from(kotlin.sourceSets.named("commonMain").get().kotlin)
-        archiveClassifier.set("sources")
-    }
-    publications.getByName<MavenPublication>("kotlinMultiplatform") {
-        artifact(emptyJar)
-        artifact(sourcesJar)
+fun MavenPublication.configurePom(projectName: String, projectDescription: String) = pom {
+    val noSchemeBaseUserUrl = "//github.com/anti-social"
+    val baseUserUrl = "https:$noSchemeBaseUserUrl"
+    val projectUrl = "$baseUserUrl/$projectName"
+
+    name.set(projectName)
+    description.set(projectDescription)
+    url.set(projectUrl)
+
+    licenses {
+        license {
+            name.set("The Apache License, Version 2.0")
+            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+        }
     }
 
-    configureRepositories(project, packageName)
+    scm {
+        url.set(projectUrl)
+        connection.set("scm:$projectUrl.git")
+        developerConnection.set("scm:git://$noSchemeBaseUserUrl/$projectName.git")
+    }
+
+    developers {
+        developer {
+            id.set("anti-social")
+            name.set("Oleksandr Koval")
+            email.set("kovalidis@gmail.com")
+        }
+    }
 }

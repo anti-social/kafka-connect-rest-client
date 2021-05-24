@@ -5,10 +5,9 @@ plugins {
 
 repositories {
     mavenLocal()
-    jcenter()
     repositories {
-    maven("https://plugins.gradle.org/m2/")
-  }
+        maven("https://plugins.gradle.org/m2/")
+    }
 }
 
 idea {
@@ -19,5 +18,6 @@ idea {
 }
 
 dependencies {
-    compile("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.72")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.32")
+    implementation("io.github.gradle-nexus:publish-plugin:1.1.0")
 }
