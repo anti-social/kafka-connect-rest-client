@@ -12,6 +12,7 @@ plugins {
     `maven-publish`
     signing
     id("io.github.gradle-nexus.publish-plugin")
+    id("org.ajoberstar.grgit") version Versions.grgit
 }
 
 repositories {
@@ -19,7 +20,10 @@ repositories {
 }
 
 group = "dev.evo.kafka-connect-rest-client"
-version = "0.0.8"
+
+val gitDescribe = grgit.describe(mapOf("tags" to true, "match" to listOf("v*")))
+    ?: "v0.0.0-unknown"
+version = gitDescribe.trimStart('v')
 
 kotlin {
     jvm {

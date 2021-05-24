@@ -1,6 +1,8 @@
 import org.gradle.api.JavaVersion
 
 object Versions {
+    val grgit = "4.1.0"
+
     val kotlin = "1.4.32"
     val coroutines = "1.4.3-native-mt"
     val ktor = "1.5.2"
