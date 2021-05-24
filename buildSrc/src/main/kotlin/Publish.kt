@@ -17,7 +17,7 @@ fun Project.configureMultiplatformPublishing(projectName: String, projectDescrip
     }
 
     configure<PublishingExtension> {
-        publications.getByName<MavenPublication>("kotlinMultiplatform") {
+        publications.withType<MavenPublication> {
             artifact(javadocJar)
 
             configurePom(projectName, projectDescription)
