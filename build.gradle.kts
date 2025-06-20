@@ -1,4 +1,8 @@
+import org.gradle.api.JavaVersion
+import org.gradle.api.plugins.JavaApplication
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.dsl.JsModuleKind
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 buildscript {
     repositories {
@@ -7,6 +11,7 @@ buildscript {
 }
 
 plugins {
+    // application
     kotlin("multiplatform")
     kotlin("plugin.serialization") version Versions.kotlin
     `maven-publish`
@@ -27,27 +32,20 @@ version = gitDescribe.trimStart('v')
 
 kotlin {
     jvm {
-        compilations {
-            listOf(this["main"], this["test"]).forEach {
-                it.kotlinOptions {
-                    jvmTarget = Versions.jvmTarget
-                }
-            }
-        }
-        attributes {
-            attribute(
-                TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE,
-                Versions.targetJvmVersionAttribute
-            )
+        // withJava()
+        // configure<JavaApplication> {
+        //     mainClass.set("dev.evo.kafka.connect.restclient.cli.MainKt")
+        // }
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_11)
         }
     }
     js {
         nodejs()
-        compilations.all {
-            kotlinOptions {
-                moduleKind = "umd"
-                sourceMap = true
-            }
+        compilerOptions {
+            moduleKind.set(JsModuleKind.MODULE_UMD)
+            sourceMap.set(true)
+
         }
     }
     linuxX64 {
@@ -63,7 +61,8 @@ kotlin {
             dependencies {
                 implementation(ktorClient("core"))
                 implementation(ktorClient("json"))
-                implementation(ktorClient("serialization"))
+                implementation(ktorClient("content-negotiation"))
+                implementation(ktorSerialization("kotlinx-json"))
             }
         }
         commonTest {
@@ -100,14 +99,6 @@ kotlin {
             }
         }
         val nativeTest by creating {}
-
-        val nativeTargetNames = targets.withType<KotlinNativeTarget>().names
-        project.configure(nativeTargetNames.map { getByName("${it}Main") }) {
-            dependsOn(nativeMain)
-        }
-        project.configure(nativeTargetNames.map { getByName("${it}Test") }) {
-            dependsOn(nativeTest)
-        }
     }
 }
 

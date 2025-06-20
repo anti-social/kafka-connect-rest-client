@@ -7,5 +7,5 @@ import kotlin.system.exitProcess
 import kotlinx.coroutines.runBlocking
 
 fun main(args: Array<String>) = runBlocking<Unit> {
-    exitProcess(run(args, Curl.create {}))
+    exitProcess(cli(args, Curl.create {}))
 }

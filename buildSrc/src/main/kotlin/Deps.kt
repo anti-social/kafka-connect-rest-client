@@ -25,6 +25,7 @@ object Deps {
     }
 
     val ktorClient = Dep("io.ktor", "ktor-client", Versions.ktor)
+    val ktorSerialization = Dep("io.ktor", "ktor-serialization", Versions.ktor)
     val serialization = Dep("org.jetbrains.kotlinx", "kotlinx-serialization", Versions.serialization)
 
     val coroutines = Dep("org.jetbrains.kotlinx", "kotlinx-coroutines", Versions.coroutines)
@@ -32,6 +33,10 @@ object Deps {
 
 fun KotlinDependencyHandler.ktorClient(module: String): String {
     return Deps.ktorClient.toNotation(module)
+}
+
+fun KotlinDependencyHandler.ktorSerialization(module: String): String {
+    return Deps.ktorSerialization.toNotation(module)
 }
 
 fun KotlinDependencyHandler.serialization(module: String): String {

@@ -1,21 +1,19 @@
 package dev.evo.kafka.connect.restclient
 
 import io.ktor.client.HttpClient
-import io.ktor.client.call.ReceivePipelineException
 import io.ktor.client.engine.HttpClientEngine
-import io.ktor.client.features.HttpClientFeature
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.features.json.serializer.KotlinxSerializer
+import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.put
-import io.ktor.client.statement.HttpResponsePipeline
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.api.createClientPlugin
+import io.ktor.http.appendPathSegments
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.takeFrom
 import io.ktor.http.Url
-import io.ktor.http.content.TextContent
-import io.ktor.util.AttributeKey
+import io.ktor.serialization.kotlinx.json.json
 import io.ktor.utils.io.core.Closeable
+import kotlinx.serialization.json.Json
 
 open class KafkaConnectRestException(
     val statusCode: Int, val statusDescription: String,
@@ -34,25 +32,17 @@ class KafkaConnectRebalanceException(
     override val isRetriable = true
 }
 
-internal class ExpectKafkaConnectSuccess {
-    companion object : HttpClientFeature<Unit, ExpectKafkaConnectSuccess> {
-        override val key = AttributeKey<ExpectKafkaConnectSuccess>("ExpectSuccess")
-
-        override fun prepare(block: Unit.() -> Unit) = ExpectKafkaConnectSuccess()
-
-        override fun install(feature: ExpectKafkaConnectSuccess, scope: HttpClient) {
-            scope.responsePipeline.intercept(HttpResponsePipeline.Receive) {
-                val status = context.response.status
-                if (status == HttpStatusCode.Conflict) {
-                    throw KafkaConnectRebalanceException(
-                        status.value,
-                        status.description
-                    )
-                }
-                if (status.value >= 300) {
-                    throw KafkaConnectRestException(status.value, status.description)
-                }
-            }
+private val ExpectKafkaConnectSuccess = createClientPlugin("ExpectKafkaConnectSuccess") {
+    onResponse { response ->
+        val status = response.status
+        if (status == HttpStatusCode.Conflict) {
+            throw KafkaConnectRebalanceException(
+                status.value,
+                status.description
+            )
+        }
+        if (status.value >= 300) {
+            throw KafkaConnectRestException(status.value, status.description)
         }
     }
 }
@@ -64,8 +54,10 @@ class KafkaConnectClient(
     val httpClient = HttpClient(httpClientEngine) {
         expectSuccess = false
         install(ExpectKafkaConnectSuccess)
-        install(JsonFeature) {
-            serializer = KotlinxSerializer()
+        install(ContentNegotiation) {
+            json(Json {
+                ignoreUnknownKeys = true
+            })
         }
     }
 
@@ -74,31 +66,30 @@ class KafkaConnectClient(
     }
 
     suspend fun info(): ConnectInfo {
-        return httpClient.get { url.takeFrom(baseUrl) }
+        return httpClient.get(baseUrl).body()
     }
 
     suspend fun connectors(): List<String> {
-        return httpClient.get {
-            url.takeFrom(baseUrl).path(CONNECTORS_ENDPOINT)
-        }
+        return httpClient.get(baseUrl) {
+            url {
+                appendPathSegments(CONNECTORS_ENDPOINT)
+            }
+        }.body()
     }
 
     suspend fun status(connectorName: String): ConnectorStatus {
-        return httpClient.get {
-            url.takeFrom(baseUrl).path(listOf(CONNECTORS_ENDPOINT, connectorName, "status"))
-        }
+        return httpClient.get(baseUrl) {
+            url {
+                appendPathSegments(CONNECTORS_ENDPOINT, connectorName, "status")
+            }
+        }.body()
     }
 
     private suspend fun emptyPut(path: List<String>) {
-        try {
-            httpClient.put<Unit> {
-                url.takeFrom(baseUrl).path(path)
-                body = TextContent(
-                    "", ContentType.Application.Json
-                )
+        httpClient.put(baseUrl) {
+            url {
+                appendPathSegments(path)
             }
-        } catch (ex: ReceivePipelineException) {
-            throw ex.cause
         }
     }
 
