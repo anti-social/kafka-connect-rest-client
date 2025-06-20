@@ -1,14 +1,8 @@
-import org.gradle.api.JavaVersion
-
 object Versions {
-    val grgit = "4.1.0"
+    val grgit = "4.1.1"
 
-    val kotlin = "1.4.32"
-    val coroutines = "1.4.3-native-mt"
-    val ktor = "1.5.2"
-    val serialization = "1.1.0"
-
-    val javaVersion = JavaVersion.VERSION_1_8
-    val jvmTarget = javaVersion.toString()
-    val targetJvmVersionAttribute = Integer.parseInt(javaVersion.majorVersion)
+    val kotlin = "2.0.21"
+    val coroutines = "1.6.3-native-mt"
+    val ktor = "3.0.3"
+    val serialization = "1.4.1"
 }

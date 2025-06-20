@@ -46,7 +46,7 @@ class ClientTests {
     @Test
     fun testInfo() = runTest {
         val client = getClientWithResponse(
-            HttpMethod.Get, "/",
+            HttpMethod.Get, "",
             """{"version":"1.1","commit":"deadbeaf"}"""
         )
         val info = client.info()

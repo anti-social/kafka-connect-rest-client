@@ -6,7 +6,9 @@ import kotlinx.serialization.SerialName
 @Serializable
 data class ConnectInfo(
     val version: String,
-    val commit: String
+    val commit: String,
+    @SerialName("kafka_cluster_id")
+    val kafkaClusterId: String? = null,
 )
 
 @Serializable
